@@ -1,0 +1,15 @@
+# IDEA
+.idea/
+!.idea/codeStyles/
+!.idea/runConfigurations/**
+out/
+**/build/
+*.iml
+**/*.iml
+
+# OSX
+.DS_Store
+.AppleDouble
+.LSOverride
+.gradle/
+build/
