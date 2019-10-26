@@ -1,0 +1,25 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /blue-backend
+  error:
+    whitelabel:
+      enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Internal app so we can enable all actuator endpoints
+        include: "*"
+
+
+spring:
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    deserialization:
+      fail-on-unknown-properties: false
+  mvc:
+    throw-exception-if-no-handler-found: true
+  resources:
+    add-mappings: false

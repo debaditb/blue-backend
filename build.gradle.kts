@@ -1,12 +1,50 @@
-
 plugins {
-    id("java-gradle-plugin")
-    id("org.springframework.boot") version "2.1.8.RELEASE"
-    id("io.spring.dependency-management") version "1.0.8.RELEASE"
+    java
+    id("org.springframework.boot") version "2.2.0.RELEASE" apply true
+    id("io.spring.dependency-management") version "1.0.8.RELEASE" apply true
 }
 
 repositories {
     jcenter()
+}
+
+data class ForcedGroup(val groupPrefix: String, val module: String, val version: String) {
+    fun matchesAnyModule(): Boolean {
+        return module == "<ANY>"
+    }
+}
+
+val forcedGroups = listOf(
+        ForcedGroup(groupPrefix = "org.slf4j", module = "slf4j-api", version = "1.7.26"),
+        ForcedGroup(groupPrefix = "org.apache.commons", module = "commons-lang3", version = "3.8.1"),
+        ForcedGroup(groupPrefix = "org.ow2.asm", module = "asm", version = "7.0"),
+        ForcedGroup(groupPrefix = "com.fasterxml.jackson.core", module = "<ANY>", version = "2.9.9")
+)
+
+configurations.all {
+    resolutionStrategy {
+        failOnVersionConflict()
+    }
+
+    exclude(module = "kotlin-stdlib-jdk7")
+
+    resolutionStrategy.eachDependency {
+        forcedGroups.forEach { fg ->
+            if (this.requested.group.startsWith(fg.groupPrefix)) {
+                if (fg.matchesAnyModule() || this.requested.module.name == fg.module) {
+                    this.useVersion(fg.version)
+                    logger.info("Forcing dependency version: [${fg.version}] on module: [${this.requested.module}]")
+                }
+            }
+        }
+    }
+}
+
+configurations {
+    all {
+        // Using log4j2 so need to exclude the others
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+    }
 }
 
 
@@ -19,8 +57,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jetty")
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
 
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-
+    implementation("org.springframework.boot:spring-boot-starter-json:2.2.0.RELEASE")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "junit") //Exclude junit 4
@@ -46,3 +83,4 @@ java {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
